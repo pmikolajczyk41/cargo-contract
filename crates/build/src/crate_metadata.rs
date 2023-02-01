@@ -146,16 +146,19 @@ fn get_cargo_metadata(manifest_path: &ManifestPath) -> Result<(CargoMetadata, Pa
         manifest_path.as_ref().to_string_lossy()
     );
     let mut cmd = MetadataCommand::new();
+    tracing::debug!("Created command");
     let metadata = cmd
         .manifest_path(manifest_path.as_ref())
         .exec()
         .context("Error invoking `cargo metadata`")?;
+    tracing::debug!("Created metadata");
     let root_package_id = metadata
         .resolve
         .as_ref()
         .and_then(|resolve| resolve.root.as_ref())
         .context("Cannot infer the root project id")?
         .clone();
+    tracing::debug!("Created package id");
     // Find the root package by id in the list of packages. It is logical error if the root
     // package is not found in the list.
     let root_package = metadata
@@ -164,6 +167,7 @@ fn get_cargo_metadata(manifest_path: &ManifestPath) -> Result<(CargoMetadata, Pa
         .find(|package| package.id == root_package_id)
         .expect("The package is not found in the `cargo metadata` output")
         .clone();
+    tracing::debug!("Created root package");
     Ok((metadata, root_package))
 }
 
